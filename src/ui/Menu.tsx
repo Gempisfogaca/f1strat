@@ -89,14 +89,14 @@ export function Menu({ save, onSettings, onQuickRace, onNewSeason, onContinueSea
               <div className="seg">
                 {(Object.keys(SEASON_FORMATS) as SeasonFormat[]).map((f) => (
                   <button key={f} className={st.seasonFormat === f ? 'on' : ''} onClick={() => set({ seasonFormat: f })}>
-                    {SEASON_FORMATS[f].label} <small>{SEASON_FORMATS[f].circuits.length} races</small>
+                    {SEASON_FORMATS[f].label} <small>{SEASON_FORMATS[f].races} races</small>
                   </button>
                 ))}
               </div>
               <p className="help">
                 {st.seasonFormat === 'full'
                   ? 'The full 2026 calendar, Melbourne to Abu Dhabi.'
-                  : `A ${SEASON_FORMATS[st.seasonFormat].circuits.length}-race selection from the calendar: ${SEASON_FORMATS[st.seasonFormat].circuits.map(circuitNameOf).join(', ')}.`}
+                  : `${SEASON_FORMATS[st.seasonFormat].races} circuits picked at random from the 2026 calendar, raced in calendar order.`}
                 {' '}Drivers' and constructors' championships; progress is saved automatically.
               </p>
               <button className="btn primary" onClick={() => onNewSeason(st.teamId, st.difficulty, st.lengthId, st.seasonFormat)}>

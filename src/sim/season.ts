@@ -1,11 +1,11 @@
 /**
  * Season mode + localStorage persistence.
- * The full season follows the real 2026 calendar (24 rounds); Short and
- * Medium seasons are spread-out subsets of it, kept in calendar order.
+ * The full season follows the real 2026 calendar (24 rounds); Short (8) and
+ * Medium (16) seasons pick random circuits, raced in calendar order.
  */
 import { circuitCfg } from './config';
 import type { Difficulty, RaceResult } from './types';
-import { DRIVERS, TEAMS } from './teams';
+import { DRIVERS, TEAMS, teamById } from './teams';
 
 export interface SeasonRound {
   name: string;
@@ -23,20 +23,25 @@ export const FULL_CALENDAR = [
 
 export type SeasonFormat = 'short' | 'medium' | 'full';
 
-export const SEASON_FORMATS: Record<SeasonFormat, { label: string; circuits: string[] }> = {
-  short: {
-    label: 'Short',
-    circuits: ['melbourne', 'suzuka', 'monaco', 'silverstone', 'spa', 'monza', 'interlagos', 'yasmarina'],
-  },
-  medium: {
-    label: 'Medium',
-    circuits: [
-      'melbourne', 'shanghai', 'suzuka', 'bahrain', 'miami', 'montreal', 'monaco', 'spielberg',
-      'silverstone', 'spa', 'zandvoort', 'monza', 'singapore', 'austin', 'interlagos', 'yasmarina',
-    ],
-  },
-  full: { label: 'Full', circuits: FULL_CALENDAR },
+/** Short and Medium pick random circuits from the calendar each new season. */
+export const SEASON_FORMATS: Record<SeasonFormat, { label: string; races: number }> = {
+  short: { label: 'Short', races: 8 },
+  medium: { label: 'Medium', races: 16 },
+  full: { label: 'Full', races: FULL_CALENDAR.length },
 };
+
+/** Random selection of `n` circuits, kept in calendar order. */
+export function pickRounds(format: SeasonFormat, rand: () => number = Math.random): string[] {
+  const n = SEASON_FORMATS[format].races;
+  if (n >= FULL_CALENDAR.length) return [...FULL_CALENDAR];
+  const pool = [...FULL_CALENDAR];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const chosen = new Set(pool.slice(0, n));
+  return FULL_CALENDAR.filter((id) => chosen.has(id));
+}
 
 export const circuitNameOf = (id: string) => circuitCfg(id).name;
 
@@ -69,7 +74,7 @@ export interface Settings {
 }
 
 export interface SaveData {
-  version: 2;
+  version: 3;
   settings: Settings;
   season: SeasonState | null;
 }
@@ -77,8 +82,8 @@ export interface SaveData {
 const KEY = 'pitwall.save.v1';
 
 const DEFAULT_SAVE: SaveData = {
-  version: 2,
-  settings: { difficulty: 'normal', lengthId: 'short', teamId: 'verdant', seasonFormat: 'short' },
+  version: 3,
+  settings: { difficulty: 'normal', lengthId: 'short', teamId: 'williams', seasonFormat: 'short' },
   season: null,
 };
 
@@ -88,10 +93,11 @@ export function loadSave(): SaveData {
     if (!raw) return structuredClone(DEFAULT_SAVE);
     const d = JSON.parse(raw) as { version: number; settings?: Partial<Settings>; season?: SeasonState | null };
     const settings = { ...DEFAULT_SAVE.settings, ...d.settings };
-    // Version 1 saves used the old fictional circuits: keep settings, drop the season.
-    if (d.version !== 2) return { ...structuredClone(DEFAULT_SAVE), settings };
-    const season = d.season && d.season.rounds?.every((id) => FULL_CALENDAR.includes(id)) ? d.season : null;
-    return { version: 2, settings, season };
+    if (!teamById(settings.teamId)) settings.teamId = DEFAULT_SAVE.settings.teamId;
+    // Older saves used fictional teams/circuits: keep settings, drop the season.
+    if (d.version !== 3) return { ...structuredClone(DEFAULT_SAVE), settings };
+    const season = d.season && d.season.rounds?.every((id) => FULL_CALENDAR.includes(id)) && teamById(d.season.teamId) ? d.season : null;
+    return { version: 3, settings, season };
   } catch {
     return structuredClone(DEFAULT_SAVE);
   }
@@ -107,7 +113,7 @@ export function writeSave(d: SaveData) {
 
 export function newSeason(teamId: string, difficulty: Difficulty, lengthId: string, format: SeasonFormat): SeasonState {
   return {
-    teamId, difficulty, lengthId, format, rounds: [...SEASON_FORMATS[format].circuits],
+    teamId, difficulty, lengthId, format, rounds: pickRounds(format),
     round: 0, seed: Math.floor(Math.random() * 1e9), results: [],
     driverPoints: Object.fromEntries(DRIVERS.map((d) => [d.id, 0])),
     teamPoints: Object.fromEntries(TEAMS.map((t) => [t.id, 0])),

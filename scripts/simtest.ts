@@ -16,7 +16,7 @@ const c = CONFIG.circuits.find((x) => x.id === circuit)!;
 const plans = suggestedPlans({ circuit: c, laps, trackTemp: c.trackTemp });
 console.log('1-stop', JSON.stringify(plans.oneStop.strategy), plans.oneStop.time.toFixed(1));
 console.log('2-stop', JSON.stringify(plans.twoStop.strategy), plans.twoStop.time.toFixed(1));
-const team = 'verdant';
+const team = 'williams';
 const ps: Record<string, any> = {};
 for (const d of driversOfTeam(team)) ps[d.id] = plans.oneStop.strategy;
 const t0 = Date.now();

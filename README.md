@@ -18,7 +18,7 @@ npm run simtest -- silverstone short random 42   # headless race for tuning
 
 ## How to play
 
-1. **Menu** – pick a team, difficulty and race length; start a Season — Short (8 races), Medium (16) or Full (all 24 rounds of the 2026 calendar) — or a Quick race on any circuit.
+1. **Menu** – pick a team, difficulty and race length; start a Season — Short (8 random circuits), Medium (16 random) or Full (all 24 rounds of the 2026 calendar) — or a Quick race on any circuit.
 2. **Pre-race** – see qualifying, circuit traits and the rain risk; choose each car's start tyre and plan
    (suggested 1-stop / 2-stop, custom stints, or no plan).
 3. **Race** – planned stops happen automatically (toggle *Auto* or *Skip* per car). Override at any time:
@@ -55,6 +55,8 @@ Tyre wear and fuel are scaled by race length, so a short race needs the same kin
 The 24 circuit outlines come from [bacinger/f1-circuits](https://github.com/bacinger/f1-circuits)
 (MIT License, © 2019-2025 Tomislav Bacinger), converted with
 `python3 scripts/import-circuits.py path/to/f1-circuits.geojson`. That data is unofficial and not
-endorsed by Formula One Licensing B.V.; teams and drivers in the game are fictional.
+endorsed by Formula One Licensing B.V.
+
+Teams and drivers follow the 2026 grid. This is an unofficial fan project, not affiliated with Formula 1, the FIA or any team; car and driver ratings are gameplay estimates in `src/sim/teams.ts`.
 Per-circuit gameplay values (laps, lap time, tyre wear, overtaking difficulty, pit loss, weather,
 Safety Car risk) are approximations tuned in `src/sim/config.ts`.
