@@ -55,7 +55,7 @@ export function TrackThumb({ id, w = 160, h = 100 }: { id: string; w?: number; h
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.strokeStyle = '#e8ecf2';
+    ctx.strokeStyle = '#2a3140';
     ctx.lineWidth = 3;
     ctx.lineJoin = 'round';
     ctx.stroke();

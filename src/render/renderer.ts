@@ -111,10 +111,10 @@ export class Renderer {
     const toScreen = (x: number, y: number) => ({ x: x * s + ox, y: y * s + oy });
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#0a0d12';
+    ctx.fillStyle = '#e4e9e2';
     ctx.fillRect(0, 0, w, h);
     // Subtle grid.
-    ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.035)';
     ctx.lineWidth = 1;
     const grid = 50 * s;
     if (grid > 8) {
@@ -128,26 +128,26 @@ export class Renderer {
     ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox, dpr * oy);
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.strokeStyle = '#121821';
+    ctx.strokeStyle = '#d3dacf';
     ctx.lineWidth = TRACK_W + 26;
     ctx.stroke(this.center);
     // Pit lane.
-    ctx.strokeStyle = '#3a414d';
+    ctx.strokeStyle = '#9aa1aa';
     ctx.lineWidth = 12;
     ctx.stroke(this.pitPath);
-    ctx.strokeStyle = '#20252e';
+    ctx.strokeStyle = '#b9bec5';
     ctx.lineWidth = 10;
     ctx.stroke(this.pitPath);
     // Track edges + tarmac.
-    ctx.strokeStyle = '#cfd5de';
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = TRACK_W + 2.4;
     ctx.stroke(this.center);
     const wet = engine.weather.wetness;
-    ctx.strokeStyle = wet > 0.05 ? mix('#2a2f38', '#1d2a3a', Math.min(1, wet * 1.4)) : '#2a2f38';
+    ctx.strokeStyle = wet > 0.05 ? mix('#646a73', '#4a5566', Math.min(1, wet * 1.4)) : '#646a73';
     ctx.lineWidth = TRACK_W;
     ctx.stroke(this.center);
     // Racing line hint.
-    ctx.strokeStyle = 'rgba(255,255,255,0.035)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     ctx.lineWidth = 6;
     ctx.stroke(this.center);
     // Kerbs.
@@ -158,7 +158,7 @@ export class Renderer {
       ctx.stroke(kseg.path);
     }
     // DRS zones.
-    ctx.strokeStyle = engine.flag === 'green' ? 'rgba(46, 230, 140, 0.55)' : 'rgba(120,120,120,0.35)';
+    ctx.strokeStyle = engine.flag === 'green' ? 'rgba(12, 160, 90, 0.7)' : 'rgba(120,120,120,0.45)';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 5]);
     for (const p of this.drsPaths) ctx.stroke(p);
@@ -173,7 +173,7 @@ export class Renderer {
     // Screen-space overlays.
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.font = '600 10px "Barlow Condensed", sans-serif';
-    ctx.fillStyle = 'rgba(46,230,140,0.8)';
+    ctx.fillStyle = 'rgba(10,130,72,0.95)';
     for (const z of this.track.drsZones) {
       const p = posAt(this.track, z.start, -this.track.pitSide * (TRACK_W / 2 + 14));
       const sp = toScreen(p.x, p.y);
@@ -182,7 +182,7 @@ export class Renderer {
     {
       const p = pitPosAt(this.track, 0.5);
       const sp = toScreen(p.x + this.track.nx[0] * this.track.pitSide * 18, p.y + this.track.ny[0] * this.track.pitSide * 18);
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillStyle = 'rgba(30,36,46,0.55)';
       ctx.fillText('PIT', sp.x - 8, sp.y + 3);
     }
 
@@ -216,9 +216,9 @@ export class Renderer {
     // Rain.
     if (engine.weather.rain > 0.02) {
       const r = engine.weather.rain;
-      ctx.fillStyle = `rgba(40, 80, 140, ${0.12 * r})`;
+      ctx.fillStyle = `rgba(60, 100, 160, ${0.14 * r})`;
       ctx.fillRect(0, 0, w, h);
-      ctx.strokeStyle = `rgba(170, 200, 255, ${0.25 + 0.35 * r})`;
+      ctx.strokeStyle = `rgba(50, 90, 150, ${0.25 + 0.3 * r})`;
       ctx.lineWidth = 1;
       ctx.beginPath();
       const count = Math.floor(this.rainDrops.length * Math.min(1, r * 1.2));
@@ -275,7 +275,7 @@ export class Renderer {
     ctx.restore();
 
     if (selected) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+      ctx.strokeStyle = 'rgba(20,26,34,0.85)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(sp.x, sp.y, Math.max(12, 10 * s) + Math.sin(performance.now() / 180) * 1.5, 0, Math.PI * 2);
