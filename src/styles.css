@@ -87,10 +87,11 @@ h3 { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--
 .season-box { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .season-line { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 .big { font-family: var(--cond); font-size: 32px; font-weight: 800; }
-.circuit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.circuit-btn { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 8px; text-align: left; display: flex; flex-direction: column; align-items: center; }
+.circuit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; max-height: 330px; overflow-y: auto; padding-right: 4px; }
+.circuit-btn { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 5px; text-align: left; display: flex; flex-direction: column; align-items: center; }
+.circuit-detail { margin-top: 8px; padding: 8px 10px; background: var(--panel2); border-radius: 8px; }
 .circuit-btn.on { border-color: var(--accent); background: #1c1416; }
-.circuit-name { font-family: var(--cond); font-weight: 700; font-size: 15px; text-transform: uppercase; align-self: flex-start; }
+.circuit-name { font-family: var(--cond); font-weight: 700; font-size: 12px; text-transform: uppercase; align-self: stretch; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .circuit-meta { color: var(--muted); font-size: 11px; align-self: flex-start; }
 
 /* ============ Pre-race / post / standings ============ */
@@ -133,7 +134,7 @@ h3 { font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--
 .good-item .mark { color: var(--good); }
 .bad-item .mark { color: var(--bad); }
 .champion { margin-bottom: 18px; border-color: #7a5d10; background: linear-gradient(90deg, #2a2108, var(--panel)); }
-.calendar { display: flex; flex-direction: column; gap: 4px; }
+.calendar { display: flex; flex-direction: column; gap: 4px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
 .cal-row { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 6px; background: var(--panel2); }
 .cal-row.next { outline: 1px solid var(--accent); }
 .cal-row.done { opacity: .85; }

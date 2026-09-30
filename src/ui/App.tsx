@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { lapsFor } from '../sim/config';
-import { applyResult, CALENDAR, loadSave, newSeason, writeSave, type SaveData } from '../sim/season';
+import { applyResult, loadSave, newSeason, roundOf, writeSave, type SaveData, type SeasonFormat } from '../sim/season';
 import type { Difficulty, RaceResult, RaceSetup, WeatherMode } from '../sim/types';
 import { Menu } from './Menu';
 import { PostRace } from './PostRace';
@@ -37,8 +37,8 @@ export default function App() {
 
   const seasonEvent = (d: SaveData): EventCtx | null => {
     const s = d.season;
-    if (!s || s.round >= CALENDAR.length) return null;
-    const r = CALENDAR[s.round];
+    if (!s || s.round >= s.rounds.length) return null;
+    const r = roundOf(s.rounds[s.round]);
     return {
       mode: 'season', circuitId: r.circuitId, roundName: `Round ${s.round + 1} · ${r.name}`,
       laps: lapsFor(r.circuitId, s.lengthId), difficulty: s.difficulty, weather: 'random', teamId: s.teamId,
@@ -53,8 +53,8 @@ export default function App() {
           save={save}
           onSettings={(settings) => persist({ ...save, settings })}
           onQuickRace={(ev) => setScreen({ kind: 'prerace', ev })}
-          onNewSeason={(teamId, difficulty, lengthId) => {
-            const d = { ...save, season: newSeason(teamId, difficulty, lengthId), settings: { teamId, difficulty, lengthId } };
+          onNewSeason={(teamId, difficulty, lengthId, format: SeasonFormat) => {
+            const d = { ...save, season: newSeason(teamId, difficulty, lengthId, format), settings: { teamId, difficulty, lengthId, seasonFormat: format } };
             persist(d);
             setScreen({ kind: 'standings' });
           }}

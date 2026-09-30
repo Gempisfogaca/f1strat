@@ -1,13 +1,14 @@
 import { CONFIG, circuitCfg } from '../sim/config';
-import { CALENDAR, driverStandings, teamStandings, type SeasonState } from '../sim/season';
+import { SEASON_FORMATS, driverStandings, seasonRounds, teamStandings, type SeasonState } from '../sim/season';
 import { driverById, teamById } from '../sim/teams';
 import { TeamDot, TrackThumb } from './common';
 
 export function Standings({ season, onNext, onMenu }: { season: SeasonState; onNext?: () => void; onMenu: () => void }) {
   const ds = driverStandings(season);
   const ts = teamStandings(season);
-  const done = season.round >= CALENDAR.length;
-  const next = CALENDAR[season.round];
+  const rounds = seasonRounds(season);
+  const done = season.round >= rounds.length;
+  const next = rounds[season.round];
   const myTeam = teamById(season.teamId);
   const myPos = ts.findIndex((t) => t.team.id === season.teamId) + 1;
   return (
@@ -15,8 +16,8 @@ export function Standings({ season, onNext, onMenu }: { season: SeasonState; onN
       <header className="screen-head">
         <button className="btn ghost" onClick={onMenu}>← Menu</button>
         <div>
-          <div className="eyebrow">Championship · {CONFIG.difficulty[season.difficulty].label} · <TeamDot color={myTeam.color} /> {myTeam.name} (P{myPos})</div>
-          <h1>{done ? 'Season complete' : `After round ${season.round} of ${CALENDAR.length}`}</h1>
+          <div className="eyebrow">Championship · {SEASON_FORMATS[season.format].label} season · {CONFIG.difficulty[season.difficulty].label} · <TeamDot color={myTeam.color} /> {myTeam.name} (P{myPos})</div>
+          <h1>{done ? 'Season complete' : `After round ${season.round} of ${rounds.length}`}</h1>
         </div>
         {onNext && <button className="btn primary" onClick={onNext}>Next: {next.name} →</button>}
       </header>
@@ -66,7 +67,7 @@ export function Standings({ season, onNext, onMenu }: { season: SeasonState; onN
           </table>
           <h2 style={{ marginTop: 20 }}>Calendar</h2>
           <div className="calendar">
-            {CALENDAR.map((r, i) => {
+            {rounds.map((r, i) => {
               const res = season.results[i];
               const winner = res ? driverById(res.results[0].driverId) : null;
               const mine = res?.results.filter((x) => x.teamId === season.teamId).map((x) => (x.status === 'dnf' ? 'DNF' : `P${x.position}`)).join(' · ');

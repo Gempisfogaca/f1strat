@@ -7,7 +7,7 @@ import { suggestedPlans } from '../src/sim/strategy';
 import { driverById, driversOfTeam } from '../src/sim/teams';
 import type { WeatherMode } from '../src/sim/types';
 
-const [circuit = 'highland', length = 'short', weather = 'random', seedArg = '42'] = process.argv.slice(2);
+const [circuit = 'silverstone', length = 'short', weather = 'random', seedArg = '42'] = process.argv.slice(2);
 const seed = Number(seedArg);
 const laps = lapsFor(circuit, length);
 const rng = new Rng(seed);

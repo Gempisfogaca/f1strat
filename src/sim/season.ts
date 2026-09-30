@@ -1,7 +1,9 @@
 /**
  * Season mode + localStorage persistence.
- * 8 rounds rotating the 3 circuits with different conditions.
+ * The full season follows the real 2026 calendar (24 rounds); Short and
+ * Medium seasons are spread-out subsets of it, kept in calendar order.
  */
+import { circuitCfg } from './config';
 import type { Difficulty, RaceResult } from './types';
 import { DRIVERS, TEAMS } from './teams';
 
@@ -12,21 +14,46 @@ export interface SeasonRound {
   rainMult: number;
 }
 
-export const CALENDAR: SeasonRound[] = [
-  { name: 'Grand Prix of Italia', circuitId: 'velocita', tempOffset: 0, rainMult: 0.8 },
-  { name: 'Porto Marina Grand Prix', circuitId: 'marina', tempOffset: 2, rainMult: 0.7 },
-  { name: 'Highland Grand Prix', circuitId: 'highland', tempOffset: -2, rainMult: 1.3 },
-  { name: 'Velocità Night Race', circuitId: 'velocita', tempOffset: -6, rainMult: 0.6 },
-  { name: 'Marina Summer Classic', circuitId: 'marina', tempOffset: 8, rainMult: 0.4 },
-  { name: 'Highland Autumn Trophy', circuitId: 'highland', tempOffset: -5, rainMult: 1.6 },
-  { name: 'Grand Prix of the Lakes', circuitId: 'velocita', tempOffset: 3, rainMult: 1.2 },
-  { name: 'Porto Marina Finale', circuitId: 'marina', tempOffset: 0, rainMult: 1.0 },
+/** Full calendar, in race order. */
+export const FULL_CALENDAR = [
+  'melbourne', 'shanghai', 'suzuka', 'bahrain', 'jeddah', 'miami', 'montreal', 'monaco',
+  'barcelona', 'spielberg', 'silverstone', 'spa', 'hungaroring', 'zandvoort', 'monza', 'madring',
+  'baku', 'singapore', 'austin', 'mexico', 'interlagos', 'lasvegas', 'lusail', 'yasmarina',
 ];
+
+export type SeasonFormat = 'short' | 'medium' | 'full';
+
+export const SEASON_FORMATS: Record<SeasonFormat, { label: string; circuits: string[] }> = {
+  short: {
+    label: 'Short',
+    circuits: ['melbourne', 'suzuka', 'monaco', 'silverstone', 'spa', 'monza', 'interlagos', 'yasmarina'],
+  },
+  medium: {
+    label: 'Medium',
+    circuits: [
+      'melbourne', 'shanghai', 'suzuka', 'bahrain', 'miami', 'montreal', 'monaco', 'spielberg',
+      'silverstone', 'spa', 'zandvoort', 'monza', 'singapore', 'austin', 'interlagos', 'yasmarina',
+    ],
+  },
+  full: { label: 'Full', circuits: FULL_CALENDAR },
+};
+
+export const circuitNameOf = (id: string) => circuitCfg(id).name;
+
+export const roundOf = (circuitId: string): SeasonRound => ({
+  name: circuitCfg(circuitId).gpName,
+  circuitId,
+  tempOffset: 0,
+  rainMult: 1,
+});
 
 export interface SeasonState {
   teamId: string;
   difficulty: Difficulty;
   lengthId: string;
+  format: SeasonFormat;
+  /** Circuit ids for this season, in order. */
+  rounds: string[];
   round: number;
   seed: number;
   results: RaceResult[];
@@ -38,10 +65,11 @@ export interface Settings {
   difficulty: Difficulty;
   lengthId: string;
   teamId: string;
+  seasonFormat: SeasonFormat;
 }
 
 export interface SaveData {
-  version: 1;
+  version: 2;
   settings: Settings;
   season: SeasonState | null;
 }
@@ -49,8 +77,8 @@ export interface SaveData {
 const KEY = 'pitwall.save.v1';
 
 const DEFAULT_SAVE: SaveData = {
-  version: 1,
-  settings: { difficulty: 'normal', lengthId: 'short', teamId: 'verdant' },
+  version: 2,
+  settings: { difficulty: 'normal', lengthId: 'short', teamId: 'verdant', seasonFormat: 'short' },
   season: null,
 };
 
@@ -58,9 +86,12 @@ export function loadSave(): SaveData {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return structuredClone(DEFAULT_SAVE);
-    const d = JSON.parse(raw) as SaveData;
-    if (d.version !== 1) return structuredClone(DEFAULT_SAVE);
-    return { ...DEFAULT_SAVE, ...d, settings: { ...DEFAULT_SAVE.settings, ...d.settings } };
+    const d = JSON.parse(raw) as { version: number; settings?: Partial<Settings>; season?: SeasonState | null };
+    const settings = { ...DEFAULT_SAVE.settings, ...d.settings };
+    // Version 1 saves used the old fictional circuits: keep settings, drop the season.
+    if (d.version !== 2) return { ...structuredClone(DEFAULT_SAVE), settings };
+    const season = d.season && d.season.rounds?.every((id) => FULL_CALENDAR.includes(id)) ? d.season : null;
+    return { version: 2, settings, season };
   } catch {
     return structuredClone(DEFAULT_SAVE);
   }
@@ -74,9 +105,10 @@ export function writeSave(d: SaveData) {
   }
 }
 
-export function newSeason(teamId: string, difficulty: Difficulty, lengthId: string): SeasonState {
+export function newSeason(teamId: string, difficulty: Difficulty, lengthId: string, format: SeasonFormat): SeasonState {
   return {
-    teamId, difficulty, lengthId, round: 0, seed: Math.floor(Math.random() * 1e9), results: [],
+    teamId, difficulty, lengthId, format, rounds: [...SEASON_FORMATS[format].circuits],
+    round: 0, seed: Math.floor(Math.random() * 1e9), results: [],
     driverPoints: Object.fromEntries(DRIVERS.map((d) => [d.id, 0])),
     teamPoints: Object.fromEntries(TEAMS.map((t) => [t.id, 0])),
   };
@@ -109,4 +141,5 @@ export function teamStandings(s: SeasonState) {
   })).sort((a, b) => b.points - a.points || b.wins - a.wins);
 }
 
-export const seasonDone = (s: SeasonState) => s.round >= CALENDAR.length;
+export const seasonDone = (s: SeasonState) => s.round >= s.rounds.length;
+export const seasonRounds = (s: SeasonState) => s.rounds.map(roundOf);

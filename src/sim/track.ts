@@ -1,8 +1,8 @@
 /**
  * Track geometry + derived data.
  *
- * Each circuit is a closed centripetal Catmull-Rom spline through hand-placed
- * control points (world space 1600×1000). The spline is resampled at uniform
+ * Each circuit is a closed centripetal Catmull-Rom spline through the real
+ * circuit outline (circuitShapes.ts), fitted into world space 1600×1000. The spline is resampled at uniform
  * arc length; curvature gives a physically-flavoured speed profile (corner
  * speed from lateral grip, then acceleration/braking passes). That profile is
  * only used as a *shape*: the lap time itself comes from the lap-time model,
@@ -11,59 +11,48 @@
  * Distances along the lap are expressed as a lap fraction u ∈ [0,1),
  * with u = 0 at the start/finish line.
  */
+import { CIRCUIT_SHAPES } from './circuitShapes';
 import { circuitCfg, type CircuitCfg } from './config';
 
 interface TrackGeom {
-  id: string;
   points: [number, number][];
-  /** Approximate world position of the start/finish line. */
+  /** World position of the start/finish line. */
   start: [number, number];
   /** Pit entry/exit as lap fractions relative to the line (entry negative). */
   pitEntry: number;
   pitExit: number;
 }
 
-const GEOMETRY: TrackGeom[] = [
-  {
-    // Long straights, a big right-hand sweep, fast esses.
-    id: 'velocita',
-    points: [
-      [260, 820], [700, 830], [1120, 826], [1330, 792], [1430, 680], [1440, 520], [1380, 380],
-      [1250, 250], [1080, 175], [920, 200], [850, 290], [760, 350], [620, 330], [520, 250],
-      [400, 200], [270, 230], [190, 330], [175, 520], [195, 700],
-    ],
-    start: [760, 830],
-    pitEntry: -0.075,
-    pitExit: 0.055,
-  },
-  {
-    // Street circuit: 90° corners, a hairpin and a tight harbour chicane.
-    id: 'marina',
-    points: [
-      [300, 830], [640, 834], [900, 830], [965, 805], [985, 740], [985, 630], [1005, 575], [1065, 552],
-      [1300, 550], [1360, 520], [1372, 455], [1345, 398], [1280, 372], [1160, 362], [1105, 330], [1092, 268],
-      [1060, 212], [1000, 192], [770, 190], [710, 222], [698, 292], [665, 342], [602, 362], [455, 362],
-      [405, 332], [385, 270], [345, 222], [280, 210], [228, 240], [208, 320], [222, 480], [262, 540],
-      [262, 610], [215, 680], [220, 770],
-    ],
-    start: [640, 834],
-    pitEntry: -0.05,
-    pitExit: 0.045,
-  },
-  {
-    // Mixed: fast opening sector, technical middle, flowing final sector.
-    id: 'highland',
-    points: [
-      [300, 830], [800, 842], [1150, 822], [1350, 762], [1432, 642], [1370, 540], [1225, 518],
-      [1100, 560], [985, 600], [885, 560], [862, 462], [930, 372], [1080, 330], [1255, 300],
-      [1345, 222], [1275, 148], [1050, 128], [760, 150], [565, 202], [440, 292], [385, 400],
-      [300, 478], [205, 560], [172, 680], [205, 785],
-    ],
-    start: [720, 840],
-    pitEntry: -0.07,
-    pitExit: 0.055,
-  },
-];
+const WORLD_W = 1600, WORLD_H = 1000, WORLD_PAD = 60;
+
+/**
+ * Real circuit outline (metres, from circuitShapes.ts) → world space.
+ * The outline is rotated to whichever angle fills a landscape screen best,
+ * then scaled and centred in the 1600×1000 world.
+ */
+function geometryFor(cfg: CircuitCfg): TrackGeom {
+  const raw = CIRCUIT_SHAPES[cfg.id];
+  if (!raw) throw new Error(`No shape for circuit ${cfg.id}`);
+  let best = { scale: 0, rot: 0 };
+  for (let deg = 0; deg < 180; deg += 3) {
+    const r = (deg * Math.PI) / 180, c = Math.cos(r), s = Math.sin(r);
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const [x, y] of raw) {
+      const rx = x * c - y * s, ry = x * s + y * c;
+      minX = Math.min(minX, rx); maxX = Math.max(maxX, rx);
+      minY = Math.min(minY, ry); maxY = Math.max(maxY, ry);
+    }
+    const scale = Math.min((WORLD_W - 2 * WORLD_PAD) / (maxX - minX), (WORLD_H - 2 * WORLD_PAD) / (maxY - minY));
+    // Prefer the natural (north-up) orientation unless rotating is clearly better.
+    if (scale > best.scale * (deg === 0 ? 1 : 1.04)) best = { scale, rot: r };
+  }
+  const c = Math.cos(best.rot), s = Math.sin(best.rot);
+  const rot = raw.map(([x, y]) => [x * c - y * s, x * s + y * c]);
+  const xs = rot.map((p) => p[0]), ys = rot.map((p) => p[1]);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const points = rot.map(([x, y]) => [WORLD_W / 2 + (x - cx) * best.scale, WORLD_H / 2 + (y - cy) * best.scale] as [number, number]);
+  return { points, start: points[0], pitEntry: cfg.pitEntry ?? -0.045, pitExit: cfg.pitExit ?? 0.04 };
+}
 
 export interface Zone {
   start: number;
@@ -163,7 +152,7 @@ export function zoneProgress(z: Zone, u: number): number {
 
 export function buildTrack(circuitId: string): Track {
   const cfg = circuitCfg(circuitId);
-  const geom = GEOMETRY.find((g) => g.id === circuitId)!;
+  const geom = geometryFor(cfg);
   const P = geom.points;
   const m = P.length;
 
@@ -256,6 +245,9 @@ export function buildTrack(circuitId: string): Track {
   const drsZones = [...findZones(fast(0.88), N, 0.05)]
     .sort((a, b) => zoneLength(b) - zoneLength(a))
     .slice(0, cfg.drsZones);
+  if (drsZones.length === 0 && passZones.length) {
+    drsZones.push([...passZones].sort((a, b) => zoneLength(b) - zoneLength(a))[0]);
+  }
 
   // 7. Kerbs on the inside of tight corners.
   const kerb = new Int8Array(N);

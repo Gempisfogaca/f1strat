@@ -54,6 +54,13 @@ export interface CircuitCfg {
   incidentPerLap: number;
   /** Number of DRS zones (the longest straights get them). */
   drsZones: number;
+  /** Optional short label for pickers (defaults to the country). */
+  short?: string;
+  /** Grand Prix name used on the calendar. */
+  gpName: string;
+  /** Optional pit entry/exit as lap fractions around the line (defaults -0.045 / +0.04). */
+  pitEntry?: number;
+  pitExit?: number;
 }
 
 export const CONFIG = {
@@ -275,24 +282,78 @@ export const CONFIG = {
 
   // --------------------------------------------------------------------------
   circuits: [
-    {
-      id: 'velocita', name: 'Velocità Park', country: 'Italia', character: 'High-speed',
-      lengthKm: 5.79, baseLapTime: 81.5, fullLaps: 53,
-      wearMult: 1.15, overtakeThreshold: 0.3, dirtyAirMult: 0.8, pitLaneLoss: 20.5,
-      trackTemp: 31, rainChance: 0.25, incidentPerLap: 0.008, drsZones: 2,
-    },
-    {
-      id: 'marina', name: 'Porto Marina', country: 'Monaco-sur-Mer', character: 'Twisty street',
-      lengthKm: 4.21, baseLapTime: 86.0, fullLaps: 60,
-      wearMult: 0.75, overtakeThreshold: 1.1, dirtyAirMult: 1.35, pitLaneLoss: 19.0,
-      trackTemp: 38, rainChance: 0.35, incidentPerLap: 0.02, drsZones: 1,
-    },
-    {
-      id: 'highland', name: 'Highland Ring', country: 'Scotland', character: 'Balanced',
-      lengthKm: 5.35, baseLapTime: 89.0, fullLaps: 55,
-      wearMult: 1.0, overtakeThreshold: 0.6, dirtyAirMult: 1.0, pitLaneLoss: 21.5,
-      trackTemp: 26, rainChance: 0.45, incidentPerLap: 0.012, drsZones: 2,
-    },
+    { id: 'melbourne', name: 'Albert Park', gpName: 'Australian Grand Prix', country: 'Australia', character: 'Fast park circuit',
+      lengthKm: 5.278, baseLapTime: 79.5, fullLaps: 58, wearMult: 0.9, overtakeThreshold: 0.6, dirtyAirMult: 1.0,
+      pitLaneLoss: 18.5, trackTemp: 32, rainChance: 0.2, incidentPerLap: 0.02, drsZones: 3 },
+    { id: 'shanghai', name: 'Shanghai International Circuit', gpName: 'Chinese Grand Prix', country: 'China', character: 'Balanced',
+      lengthKm: 5.451, baseLapTime: 93.5, fullLaps: 56, wearMult: 1.1, overtakeThreshold: 0.5, dirtyAirMult: 1.0,
+      pitLaneLoss: 22, trackTemp: 28, rainChance: 0.3, incidentPerLap: 0.01, drsZones: 2 },
+    { id: 'suzuka', name: 'Suzuka', gpName: 'Japanese Grand Prix', country: 'Japan', character: 'Technical, fast',
+      lengthKm: 5.807, baseLapTime: 90.5, fullLaps: 53, wearMult: 1.15, overtakeThreshold: 0.9, dirtyAirMult: 1.15,
+      pitLaneLoss: 22.5, trackTemp: 28, rainChance: 0.35, incidentPerLap: 0.012, drsZones: 1 },
+    { id: 'bahrain', name: 'Bahrain International Circuit', gpName: 'Bahrain Grand Prix', country: 'Bahrain', character: 'Abrasive, stop-start',
+      lengthKm: 5.412, baseLapTime: 92.5, fullLaps: 57, wearMult: 1.25, overtakeThreshold: 0.4, dirtyAirMult: 0.9,
+      pitLaneLoss: 23, trackTemp: 36, rainChance: 0.02, incidentPerLap: 0.008, drsZones: 3 },
+    { id: 'jeddah', name: 'Jeddah Corniche Circuit', gpName: 'Saudi Arabian Grand Prix', country: 'Saudi Arabia', character: 'High-speed street',
+      lengthKm: 6.175, baseLapTime: 89.5, fullLaps: 50, wearMult: 0.8, overtakeThreshold: 0.5, dirtyAirMult: 1.1,
+      pitLaneLoss: 20, trackTemp: 32, rainChance: 0.02, incidentPerLap: 0.025, drsZones: 3 },
+    { id: 'miami', short: 'Miami', name: 'Miami International Autodrome', gpName: 'Miami Grand Prix', country: 'USA', character: 'Street-style, hot',
+      lengthKm: 5.412, baseLapTime: 89.5, fullLaps: 57, wearMult: 1.0, overtakeThreshold: 0.6, dirtyAirMult: 1.05,
+      pitLaneLoss: 20, trackTemp: 45, rainChance: 0.25, incidentPerLap: 0.015, drsZones: 3 },
+    { id: 'montreal', name: 'Circuit Gilles-Villeneuve', gpName: 'Canadian Grand Prix', country: 'Canada', character: 'Stop-start, walls',
+      lengthKm: 4.361, baseLapTime: 74.5, fullLaps: 70, wearMult: 0.85, overtakeThreshold: 0.45, dirtyAirMult: 0.95,
+      pitLaneLoss: 18.5, trackTemp: 30, rainChance: 0.3, incidentPerLap: 0.025, drsZones: 3 },
+    { id: 'monaco', name: 'Circuit de Monaco', gpName: 'Monaco Grand Prix', country: 'Monaco', character: 'Tight street — no overtaking',
+      lengthKm: 3.337, baseLapTime: 74, fullLaps: 78, wearMult: 0.6, overtakeThreshold: 2.5, dirtyAirMult: 1.6,
+      pitLaneLoss: 20, trackTemp: 40, rainChance: 0.15, incidentPerLap: 0.03, drsZones: 1 },
+    { id: 'barcelona', short: 'Barcelona', name: 'Circuit de Barcelona-Catalunya', gpName: 'Barcelona-Catalunya Grand Prix', country: 'Spain', character: 'High degradation',
+      lengthKm: 4.655, baseLapTime: 76.5, fullLaps: 66, wearMult: 1.2, overtakeThreshold: 0.9, dirtyAirMult: 1.2,
+      pitLaneLoss: 22, trackTemp: 40, rainChance: 0.1, incidentPerLap: 0.008, drsZones: 2 },
+    { id: 'spielberg', name: 'Red Bull Ring', gpName: 'Austrian Grand Prix', country: 'Austria', character: 'Short, fast, hilly',
+      lengthKm: 4.318, baseLapTime: 67, fullLaps: 71, wearMult: 1.0, overtakeThreshold: 0.4, dirtyAirMult: 0.9,
+      pitLaneLoss: 20, trackTemp: 38, rainChance: 0.3, incidentPerLap: 0.012, drsZones: 3 },
+    { id: 'silverstone', name: 'Silverstone', gpName: 'British Grand Prix', country: 'Great Britain', character: 'High-speed classic',
+      lengthKm: 5.891, baseLapTime: 89.5, fullLaps: 52, wearMult: 1.2, overtakeThreshold: 0.55, dirtyAirMult: 1.1,
+      pitLaneLoss: 21, trackTemp: 28, rainChance: 0.4, incidentPerLap: 0.01, drsZones: 2 },
+    { id: 'spa', name: 'Spa-Francorchamps', gpName: 'Belgian Grand Prix', country: 'Belgium', character: 'Long, fast, rainy',
+      lengthKm: 7.004, baseLapTime: 106, fullLaps: 44, wearMult: 1.05, overtakeThreshold: 0.4, dirtyAirMult: 0.85,
+      pitLaneLoss: 18, trackTemp: 22, rainChance: 0.5, incidentPerLap: 0.015, drsZones: 2 },
+    { id: 'hungaroring', name: 'Hungaroring', gpName: 'Hungarian Grand Prix', country: 'Hungary', character: 'Twisty, hard to pass',
+      lengthKm: 4.381, baseLapTime: 79.5, fullLaps: 70, wearMult: 1.05, overtakeThreshold: 1.3, dirtyAirMult: 1.35,
+      pitLaneLoss: 21, trackTemp: 45, rainChance: 0.15, incidentPerLap: 0.01, drsZones: 1 },
+    { id: 'zandvoort', name: 'Circuit Zandvoort', gpName: 'Dutch Grand Prix', country: 'Netherlands', character: 'Narrow, banked',
+      lengthKm: 4.259, baseLapTime: 72.5, fullLaps: 72, wearMult: 1.0, overtakeThreshold: 1.4, dirtyAirMult: 1.35,
+      pitLaneLoss: 21, trackTemp: 26, rainChance: 0.3, incidentPerLap: 0.015, drsZones: 2 },
+    { id: 'monza', name: 'Monza', gpName: 'Italian Grand Prix', country: 'Italy', character: 'Temple of speed',
+      lengthKm: 5.793, baseLapTime: 82, fullLaps: 53, wearMult: 0.9, overtakeThreshold: 0.35, dirtyAirMult: 0.8,
+      pitLaneLoss: 24, trackTemp: 34, rainChance: 0.15, incidentPerLap: 0.01, drsZones: 2 },
+    { id: 'madring', short: 'Madrid', name: 'Madring', gpName: 'Spanish Grand Prix', country: 'Spain', character: 'New street-hybrid',
+      lengthKm: 5.474, baseLapTime: 87.5, fullLaps: 57, wearMult: 0.95, overtakeThreshold: 0.8, dirtyAirMult: 1.1,
+      pitLaneLoss: 20, trackTemp: 40, rainChance: 0.08, incidentPerLap: 0.02, drsZones: 2 },
+    { id: 'baku', name: 'Baku City Circuit', gpName: 'Azerbaijan Grand Prix', country: 'Azerbaijan', character: 'Street, huge straight',
+      lengthKm: 6.003, baseLapTime: 104, fullLaps: 51, wearMult: 0.75, overtakeThreshold: 0.4, dirtyAirMult: 0.9,
+      pitLaneLoss: 20, trackTemp: 35, rainChance: 0.05, incidentPerLap: 0.03, drsZones: 2 },
+    { id: 'singapore', name: 'Marina Bay Street Circuit', gpName: 'Singapore Grand Prix', country: 'Singapore', character: 'Night street, hot',
+      lengthKm: 4.928, baseLapTime: 94, fullLaps: 62, wearMult: 0.9, overtakeThreshold: 1.5, dirtyAirMult: 1.4,
+      pitLaneLoss: 27, trackTemp: 36, rainChance: 0.3, incidentPerLap: 0.035, drsZones: 3 },
+    { id: 'austin', short: 'Austin', name: 'Circuit of the Americas', gpName: 'United States Grand Prix', country: 'USA', character: 'Mixed, bumpy',
+      lengthKm: 5.514, baseLapTime: 97, fullLaps: 56, wearMult: 1.1, overtakeThreshold: 0.55, dirtyAirMult: 1.0,
+      pitLaneLoss: 20, trackTemp: 35, rainChance: 0.15, incidentPerLap: 0.012, drsZones: 2 },
+    { id: 'mexico', name: 'Autódromo Hermanos Rodríguez', gpName: 'Mexico City Grand Prix', country: 'Mexico', character: 'High altitude',
+      lengthKm: 4.304, baseLapTime: 79, fullLaps: 71, wearMult: 0.9, overtakeThreshold: 0.6, dirtyAirMult: 1.0,
+      pitLaneLoss: 22, trackTemp: 42, rainChance: 0.15, incidentPerLap: 0.012, drsZones: 3 },
+    { id: 'interlagos', name: 'Interlagos', gpName: 'São Paulo Grand Prix', country: 'Brazil', character: 'Short, rain-prone',
+      lengthKm: 4.309, baseLapTime: 72.5, fullLaps: 71, wearMult: 1.05, overtakeThreshold: 0.45, dirtyAirMult: 0.95,
+      pitLaneLoss: 21, trackTemp: 38, rainChance: 0.45, incidentPerLap: 0.02, drsZones: 2 },
+    { id: 'lasvegas', short: 'Las Vegas', name: 'Las Vegas Strip Circuit', gpName: 'Las Vegas Grand Prix', country: 'USA', character: 'Cold night street',
+      lengthKm: 6.201, baseLapTime: 94.5, fullLaps: 50, wearMult: 0.8, overtakeThreshold: 0.4, dirtyAirMult: 0.9,
+      pitLaneLoss: 21, trackTemp: 16, rainChance: 0.03, incidentPerLap: 0.015, drsZones: 2 },
+    { id: 'lusail', name: 'Lusail International Circuit', gpName: 'Qatar Grand Prix', country: 'Qatar', character: 'Flowing, tyre-killer',
+      lengthKm: 5.38, baseLapTime: 84.5, fullLaps: 57, wearMult: 1.35, overtakeThreshold: 0.9, dirtyAirMult: 1.15,
+      pitLaneLoss: 25, trackTemp: 30, rainChance: 0.02, incidentPerLap: 0.01, drsZones: 1 },
+    { id: 'yasmarina', name: 'Yas Marina', gpName: 'Abu Dhabi Grand Prix', country: 'UAE', character: 'Twilight finale',
+      lengthKm: 5.281, baseLapTime: 86.5, fullLaps: 58, wearMult: 0.9, overtakeThreshold: 0.6, dirtyAirMult: 1.0,
+      pitLaneLoss: 22, trackTemp: 30, rainChance: 0.02, incidentPerLap: 0.008, drsZones: 2 },
   ] as CircuitCfg[],
 };
 
